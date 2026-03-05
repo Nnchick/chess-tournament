@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-1">Турниры</h1>
+        <p class="text-muted mb-0">
+            {{ total }} всего{% if total_pages > 1 %}, стр. {{ page }} из {{ total_pages }}{% endif %}
+        </p>
+    </div>
+    {% if is_admin %}
+    <a href="{{ url_for('new_tournament') }}" class="btn btn-success">
+        <i class="bi bi-plus-lg me-1"></i>Создать турнир
+    </a>
+    {% endif %}
+</div>
+
+<form method="get" action="{{ url_for('list_tournaments') }}" class="row g-2 mb-4">
+    <div class="col-12 col-md-5">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="q" class="form-control" placeholder="Поиск по названию"
+                   value="{{ search_q or '' }}">
+        </div>
+    </div>
+    <div class="col-8 col-md-4">
+        <select name="status" class="form-select">
+            <option value="">Все статусы</option>
+            <option value="planned" {% if filter_status == 'planned' %}selected{% endif %}>Планируется</option>
+            <option value="registration" {% if filter_status == 'registration' %}selected{% endif %}>Регистрация</option>
+            <option value="running" {% if filter_status == 'running' %}selected{% endif %}>Идёт</option>
+            <option value="finished" {% if filter_status == 'finished' %}selected{% endif %}>Завершён</option>
+        </select>
+    </div>
+    <div class="col-4 col-md-3 d-flex gap-1">
+        <button type="submit" class="btn btn-primary flex-grow-1">
+            <i class="bi bi-funnel"></i> Найти
+        </button>
+        {% if search_q or filter_status %}
+        <a href="{{ url_for('list_tournaments') }}" class="btn btn-outline-secondary" title="Сбросить">×</a>
+        {% endif %}
+    </div>
+</form>
+
+{% if tournaments %}
+<div class="row g-4">
+    {% for t in tournaments %}
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('tournament_detail', tournament_id=t.id) }}" class="text-decoration-none d-block h-100">
+            <div class="card h-100 tournament-card">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h3 class="h5 mb-0 text-truncate" style="color: var(--color-text);">{{ t.name }}</h3>
+                        <span class="badge {% if t.status == 'planned' %}bg-secondary{% elif t.status == 'running' %}bg-success{% elif t.status == 'finished' %}bg-dark{% else %}bg-info text-dark{% endif %}">
+                            {% if t.status == 'planned' %}Планируется{% elif t.status == 'registration' %}Регистрация{% elif t.status == 'running' %}Идёт{% else %}Завершён{% endif %}
+                        </span>
+                    </div>
+                    <div class="d-flex gap-3 text-muted small mt-3 flex-wrap">
+                        <span><i class="bi bi-people-fill me-1"></i>{{ player_counts.get(t.id, 0) }} уч.</span>
+                        <span><i class="bi bi-arrow-repeat me-1"></i>{{ t.rounds }} туров</span>
+                        <span><i class="bi bi-people me-1"></i>{{ t.max_players or "∞" }} макс.</span>
+                        {% if t.time_control %}<span><i class="bi bi-clock me-1"></i>{{ t.time_control }}</span>{% endif %}
+                        {% if t.venue %}<span><i class="bi bi-geo-alt me-1"></i>{{ t.venue[:30] }}{{ "…" if t.venue|length > 30 else "" }}</span>{% endif %}
+                        {% if t.prize_fund %}<span><i class="bi bi-trophy me-1"></i>{{ t.prize_fund }}</span>{% endif %}
+                    </div>
+                    <div class="mt-3 pt-3 border-top border-secondary">
+                        <span class="small" style="color: var(--color-accent);">Подробнее →</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% if total_pages > 1 %}
+<nav aria-label="Пагинация" class="mt-4">
+    <ul class="pagination justify-content-center flex-wrap">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ page - 1 }}&q={{ search_q or '' }}&status={{ filter_status or '' }}" {% if page <= 1 %}tabindex="-1"{% endif %}>‹</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" href="?page={{ p }}&q={{ search_q or '' }}&status={{ filter_status or '' }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ page + 1 }}&q={{ search_q or '' }}&status={{ filter_status or '' }}" {% if page >= total_pages %}tabindex="-1"{% endif %}>›</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% else %}
+<div class="card p-5 text-center">
+    <i class="bi bi-{{ 'search' if (search_q or filter_status) else 'trophy' }} display-4 text-muted mb-3"></i>
+    <p class="text-muted mb-0">
+        {% if search_q or filter_status %}
+        По выбранным критериям турниров не найдено. Попробуйте изменить поиск или фильтр.
+        {% else %}
+        Пока нет ни одного турнира. Администратор может создать первый.
+        {% endif %}
+    </p>
+    {% if search_q or filter_status %}
+    <a href="{{ url_for('list_tournaments') }}" class="btn btn-outline-primary mt-3">Сбросить фильтры</a>
+    {% elif is_admin %}
+    <a href="{{ url_for('new_tournament') }}" class="btn btn-primary mt-3">Создать турнир</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

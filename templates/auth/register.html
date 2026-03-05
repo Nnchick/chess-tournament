@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">Регистрация</h1>
+                <p class="text-muted small mb-4">
+                    Создайте аккаунт, чтобы войти в систему и участвовать в турнирах.
+                </p>
+
+                {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required
+                               placeholder="example@mail.ru">
+                    </div>
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">Имя (необязательно)</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name"
+                               placeholder="Иван">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required
+                               minlength="6" placeholder="Не менее 6 символов">
+                    </div>
+                    <div class="mb-4">
+                        <label for="password_confirm" class="form-label">Подтвердите пароль</label>
+                        <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-2">Зарегистрироваться</button>
+                    <p class="text-center text-muted small mb-0">
+                        Уже есть аккаунт? <a href="{{ url_for('login_page') }}">Войти</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

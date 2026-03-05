@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Мои турниры</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Мои турниры</h1>
+    <a href="{{ url_for('profile_edit_page') }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-pencil me-1"></i>Редактировать профиль
+    </a>
+</div>
+
+<p class="text-muted mb-4">
+    Здесь отображаются турниры, в которых вы зарегистрированы как участник.
+    Записывайтесь на турниры через страницу <a href="{{ url_for('public_register_page') }}">«Записаться»</a>,
+    предварительно войдя в аккаунт.
+</p>
+
+{% if my_tournaments %}
+<div class="row g-3">
+    {% for item in my_tournaments %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{{ url_for('tournament_detail', tournament_id=item.tournament.id) }}" class="text-decoration-none">
+                        {{ item.tournament.name }}
+                    </a>
+                </h5>
+                <p class="card-text small text-muted mb-2">
+                    {{ item.tournament.rounds }} туров,
+                    {{ item.tournament.time_control or "контроль не указан" }}
+                </p>
+                <div class="d-flex flex-wrap gap-2 small">
+                    {% if item.status == 'finished' %}
+                        <span class="badge bg-secondary">Завершён</span>
+                        {% if item.place %}
+                            <span class="badge bg-primary">Место: {{ item.place }}</span>
+                        {% endif %}
+                    {% elif item.status == 'running' %}
+                        <span class="badge bg-success">Идёт</span>
+                    {% elif item.status == 'registration' %}
+                        <span class="badge bg-info">Регистрация</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark">Планируется</span>
+                    {% endif %}
+                    <span class="badge bg-dark">Очки: {{ "%.1f"|format(item.score) }}</span>
+                </div>
+                <a href="{{ url_for('tournament_detail', tournament_id=item.tournament.id) }}"
+                   class="btn btn-sm btn-outline-primary mt-2">
+                    Подробнее
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+    Вы пока не зарегистрированы ни в одном турнире.
+    <a href="{{ url_for('public_register_page') }}" class="alert-link">Записаться на турнир</a>
+</div>
+{% endif %}
+{% endblock %}

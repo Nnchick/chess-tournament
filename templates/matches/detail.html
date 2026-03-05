@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('list_tournaments') }}">Турниры</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('tournament_detail', tournament_id=match.round.tournament.id) }}">{{ match.round.tournament.name }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('current_round', tournament_id=match.round.tournament.id) }}">Текущий тур</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Партия</li>
+    </ol>
+</nav>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Партия доска {{ match.board_number }}</h1>
+        <p class="mb-0" style="color: var(--color-text-secondary);">
+            Турнир: <strong style="color: var(--color-text);">{{ match.round.tournament.name }}</strong>,
+            тур № {{ match.round.number }}<br>
+            Белые: <strong style="color: var(--color-text);">{{ match.white_player.display_name }}</strong>,
+            чёрные: <strong style="color: var(--color-text);">{{ match.black_player.display_name if match.black_player else "BYE" }}</strong>
+        </p>
+    </div>
+    <a href="{{ url_for('current_round', tournament_id=match.round.tournament.id) }}" class="btn btn-outline-secondary">
+        ← К текущему туру
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card p-4">
+            <h2 class="h5 mb-3" style="color: var(--color-text);">Результат</h2>
+            <p class="mb-0" style="color: var(--color-text);">
+                {% if match.result %}
+                    Текущий результат: <strong>{{ match.result }}</strong>
+                {% else %}
+                    Результат ещё не введён.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card p-4">
+            <h2 class="h5 mb-3" style="color: var(--color-text);">PGN / текстовая нотация</h2>
+            {% if match.pgn %}
+            <div class="d-flex gap-2 mb-2">
+                <a href="{{ url_for('download_match_pgn', match_id=match.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-download me-1"></i>Скачать PGN
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="copyPgnBtn" title="Копировать в буфер">
+                    <i class="bi bi-clipboard me-1"></i>Копировать
+                </button>
+            </div>
+            <pre class="p-3 rounded small mb-3" id="pgnText" style="background: rgba(0,0,0,0.3); color: var(--color-text-secondary); border: 1px solid rgba(255,255,255,0.06);">{{ match.pgn }}</pre>
+            {% else %}
+            <p style="color: var(--color-text-muted);">Нотация партии не сохранена.</p>
+            {% endif %}
+            {% if is_admin %}
+            <form method="post" action="{{ url_for('update_match_pgn', match_id=match.id) }}">
+                <div class="mb-3">
+                    <textarea class="form-control" name="pgn" id="pgn" rows="8"
+                              placeholder="[Event \"...\"]&#10;1. e4 e5 2. Nf3 Nc6 ...">{{ match.pgn or "" }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить нотацию</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if match.pgn and match.black_player %}
+<div class="card p-4 mb-4">
+    <h2 class="h5 mb-3" style="color: var(--color-text);">
+        <i class="bi bi-grid-3x3-gap me-2" style="color: var(--color-accent);"></i>Просмотр партии
+    </h2>
+    <div class="row align-items-start">
+        <div class="col-auto mb-3 mb-md-0">
+            <div id="chessboard" style="width: 320px; max-width: 100%;"></div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-start" title="В начало">⟪</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-prev" title="Назад">‹</button>
+                <span class="align-self-center small" id="move-info" style="color: var(--color-text-muted);">0 / 0</span>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-next" title="Вперёд">›</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-end" title="В конец">⟫</button>
+            </div>
+        </div>
+        <div class="col">
+            <div id="pgn-moves" class="small" style="color: var(--color-text-secondary); line-height: 1.8;"></div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+<script>
+(function() {
+    var pgnText = {{ (match.pgn or "")|tojson }};
+    if (!pgnText || typeof Chess === 'undefined') return;
+
+    var game = new Chess();
+    var positions = ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'];
+    var moveIndex = 0;
+
+    try {
+        game.load_pgn(pgnText);
+        var moves = game.history();
+        var g = new Chess();
+        for (var i = 0; i < moves.length; i++) {
+            g.move(moves[i]);
+            positions.push(g.fen());
+        }
+    } catch (e) {
+        positions = ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'];
+    }
+
+    var board = Chessboard('chessboard', {
+        position: positions[0],
+        draggable: false,
+        pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png'
+    });
+
+    function updateBoard() {
+        board.position(positions[moveIndex]);
+        document.getElementById('move-info').textContent = moveIndex + ' / ' + (positions.length - 1);
+        document.getElementById('btn-prev').disabled = moveIndex <= 0;
+        document.getElementById('btn-next').disabled = moveIndex >= positions.length - 1;
+    }
+
+    document.getElementById('btn-start').onclick = function() { moveIndex = 0; updateBoard(); };
+    document.getElementById('btn-prev').onclick = function() { if (moveIndex > 0) { moveIndex--; updateBoard(); } };
+    document.getElementById('btn-next').onclick = function() { if (moveIndex < positions.length - 1) { moveIndex++; updateBoard(); } };
+    document.getElementById('btn-end').onclick = function() { moveIndex = positions.length - 1; updateBoard(); };
+
+    if (game.history && game.history().length > 0) {
+        var html = '';
+        var moves = game.history();
+        var num = 1;
+        for (var i = 0; i < moves.length; i++) {
+            if (i % 2 === 0) html += num++ + '. ';
+            html += '<span class="pgn-move" data-idx="' + (i + 1) + '">' + moves[i] + '</span> ';
+        }
+        document.getElementById('pgn-moves').innerHTML = html;
+        document.querySelectorAll('.pgn-move').forEach(function(el, i) {
+            el.style.cursor = 'pointer';
+            el.onclick = function() { moveIndex = parseInt(this.dataset.idx); updateBoard(); };
+        });
+    }
+
+    updateBoard();
+})();
+</script>
+{% endif %}
+
+{% if match.pgn %}
+<script>
+(function() {
+    var btn = document.getElementById('copyPgnBtn');
+    if (!btn) return;
+    var pgnEl = document.getElementById('pgnText');
+    btn.addEventListener('click', function() {
+        var text = pgnEl ? pgnEl.textContent : '';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                var orig = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check me-1"></i>Скопировано!';
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-outline-secondary');
+                setTimeout(function() {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-secondary');
+                }, 1500);
+            });
+        }
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

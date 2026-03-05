@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('list_tournaments') }}">Турниры</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('tournament_detail', tournament_id=tournament.id) }}">{{ tournament.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">История туров</li>
+    </ol>
+</nav>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-1">Туры турнира — {{ tournament.name }}</h1>
+        <p class="text-muted mb-0">
+            Всего туров по регламенту: <strong>{{ tournament.rounds }}</strong>
+        </p>
+    </div>
+    <a href="{{ url_for('tournament_detail', tournament_id=tournament.id) }}" class="btn btn-outline-secondary">
+        ← К турниру
+    </a>
+</div>
+
+{% if rounds %}
+    {% for r in rounds %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Тур № {{ r.number }}</span>
+                <a href="{{ url_for('current_round', tournament_id=tournament.id) if loop.last else '#' }}"
+                   class="btn btn-sm btn-outline-primary{% if not loop.last %} disabled{% endif %}">
+                    Открыть (последний тур)
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-sm align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th scope="col">Доска</th>
+                            <th scope="col">Белые</th>
+                            <th scope="col">Чёрные / BYE</th>
+                            <th scope="col">Результат</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for m in r.matches %}
+                            <tr>
+                                <td>{{ m.board_number }}</td>
+                                <td>{{ m.white_player.display_name }}</td>
+                                <td>
+                                    {% if m.black_player %}
+                                        {{ m.black_player.display_name }}
+                                    {% else %}
+                                        <span class="badge bg-info text-dark">BYE</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ m.result or "—" }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p class="text-muted">Для турнира ещё не создано ни одного тура.</p>
+{% endif %}
+{% endblock %}
+

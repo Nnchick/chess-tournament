@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('profile_page') }}">Мои турниры</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Редактирование профиля</li>
+    </ol>
+</nav>
+
+<h1 class="mb-4">Редактирование профиля</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <form method="post" action="{{ url_for('profile_update') }}">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <input type="text" class="form-control" value="{{ current_user.email }}" disabled>
+                    <small class="text-muted">Email нельзя изменить</small>
+                </div>
+                <div class="mb-3">
+                    <label for="first_name" class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name"
+                           value="{{ current_user.first_name or '' }}" maxlength="100"
+                           placeholder="Иван">
+                </div>
+                <div class="mb-3">
+                    <label for="last_name" class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name"
+                           value="{{ current_user.last_name or '' }}" maxlength="100"
+                           placeholder="Иванов">
+                </div>
+                <div class="mb-3">
+                    <label for="nickname" class="form-label">Никнейм</label>
+                    <input type="text" class="form-control" id="nickname" name="nickname"
+                           value="{{ current_user.nickname or '' }}" maxlength="100"
+                           placeholder="ChessMaster">
+                </div>
+                <div class="mb-3">
+                    <label for="rating_elo" class="form-label">Рейтинг Elo</label>
+                    <input type="number" class="form-control" id="rating_elo" name="rating_elo"
+                           value="{{ current_user.rating_elo or '' }}" min="0" step="1"
+                           placeholder="1800">
+                    <small class="text-muted">Используется при автозаполнении формы регистрации на турнир</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <a href="{{ url_for('profile_page') }}" class="btn btn-outline-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

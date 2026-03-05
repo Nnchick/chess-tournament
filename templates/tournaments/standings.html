@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-1">Турнирная таблица — {{ tournament.name }}</h1>
+        <p class="text-muted mb-0">
+            Кол-во туров: <strong>{{ tournament.rounds }}</strong>,
+            контроль времени: <strong>{{ tournament.time_control or "не указан" }}</strong>
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('export_standings_pdf_route', tournament_id=tournament.id) }}"
+           class="btn btn-danger">
+            <i class="bi bi-file-pdf"></i> Экспорт в PDF
+        </a>
+        <a href="{{ url_for('export_standings_csv', tournament_id=tournament.id) }}"
+           class="btn btn-success">
+            <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+        </a>
+        <a href="{{ url_for('tournament_detail', tournament_id=tournament.id) }}" class="btn btn-outline-secondary">
+            ← К турниру
+        </a>
+    </div>
+</div>
+
+<div class="table-responsive shadow-sm mb-4">
+    <table class="table table-striped table-hover table-sm align-middle mb-0">
+        <thead class="table-dark">
+        <tr>
+            <th scope="col" class="text-center">Место</th>
+            <th scope="col">Участник</th>
+            <th scope="col" class="text-center">Рейтинг</th>
+            <th scope="col" class="text-center">Очки</th>
+            <th scope="col" class="text-center">Buchholz</th>
+            <th scope="col" class="text-center">Median-Buchholz</th>
+            <th scope="col" class="text-center">Баланс цвета</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in standings %}
+            <tr>
+                <th scope="row" class="text-center">{{ loop.index }}</th>
+                <td>{{ row.player.display_name }}</td>
+                <td class="text-center">{{ row.player.rating_elo or "—" }}</td>
+                <td class="text-center">{{ "%.1f"|format(row.score) }}</td>
+                <td class="text-center">{{ "%.1f"|format(row.buchholz) }}</td>
+                <td class="text-center">{{ "%.1f"|format(row.median_buchholz) }}</td>
+                <td class="text-center">{{ row.player.color_balance }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p class="text-muted">
+    Коэффициент <strong>Buchholz</strong> — сумма очков всех соперников игрока.
+    <br>
+    <strong>Median-Buchholz</strong> — тот же Buchholz, но без одного самого высокого и одного самого низкого результата,
+    что уменьшает влияние случайных результатов.
+</p>
+{% endblock %}
+

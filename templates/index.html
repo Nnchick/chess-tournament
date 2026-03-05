@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-section py-5 mb-5">
+    <div class="row align-items-center">
+        <div class="col-lg-7 mb-4 mb-lg-0">
+            <h1 class="display-5 fw-bold mb-3">Шахматные турниры по швейцарской системе</h1>
+            <p class="lead text-secondary mb-4">
+                Организуйте турнир, зарегистрируйте участников и получите турнирную таблицу
+                с коэффициентами Buchholz и Median-Buchholz. Всё в одном веб-сервисе.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-primary btn-lg px-4" href="{{ url_for('list_tournaments') }}">
+                    <i class="bi bi-trophy me-2"></i>Турниры
+                </a>
+                <a class="btn btn-success btn-lg px-4" href="{{ url_for('register_page') }}">
+                    <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
+                </a>
+                <a class="btn btn-outline-dark btn-lg px-4" href="{{ url_for('login_page') }}">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-lg overflow-hidden rounded-3">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-primary me-2">Учебный проект</span>
+                        <small style="color: var(--color-text-secondary);">09.02.07 Информационные системы</small>
+                    </div>
+                    <h3 class="h5 mb-3" style="color: var(--color-text);">Стек технологий</h3>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2" style="color: var(--color-text);"><i class="bi bi-check-circle-fill text-success me-2"></i>Python, FastAPI</li>
+                        <li class="mb-2" style="color: var(--color-text);"><i class="bi bi-check-circle-fill text-success me-2"></i>SQLAlchemy, SQLite</li>
+                        <li class="mb-2" style="color: var(--color-text);"><i class="bi bi-check-circle-fill text-success me-2"></i>Bootstrap 5, Jinja2</li>
+                        <li class="mb-0" style="color: var(--color-text);"><i class="bi bi-check-circle-fill text-success me-2"></i>Швейцарская жеребьёвка</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Дашборд статистики -->
+<section class="stats-dashboard mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <a href="{{ url_for('list_tournaments') }}" class="text-decoration-none d-block h-100">
+                <div class="card h-100 stats-card">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3 stats-icon stats-tournaments">
+                            <i class="bi bi-trophy fs-4"></i>
+                        </div>
+                        <div>
+                            <div class="display-6 fw-bold" style="color: var(--color-text);">{{ stats.tournaments }}</div>
+                            <div class="small" style="color: var(--color-text-muted);">Турниров</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 stats-card">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 stats-icon stats-players">
+                        <i class="bi bi-people fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="display-6 fw-bold" style="color: var(--color-text);">{{ stats.players }}</div>
+                        <div class="small" style="color: var(--color-text-muted);">Участников</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 stats-card">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 stats-icon stats-matches">
+                        <i class="bi bi-diagram-3 fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="display-6 fw-bold" style="color: var(--color-text);">{{ stats.matches }}</div>
+                        <div class="small" style="color: var(--color-text-muted);">Сыграно партий</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features-section mb-5">
+    <h2 class="h4 text-center mb-4">Возможности сервиса</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3">
+                        <i class="bi bi-gear text-primary fs-4"></i>
+                    </div>
+                    <h3 class="h5 mb-2">Для организатора</h3>
+                    <p class="text-muted small mb-0">
+                        Создавайте турниры, управляйте раундами, вводите результаты партий
+                        и экспортируйте турнирные таблицы в CSV.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex p-3 mb-3">
+                        <i class="bi bi-people text-success fs-4"></i>
+                    </div>
+                    <h3 class="h5 mb-2">Для участников</h3>
+                    <p class="text-muted small mb-0">
+                        Регистрируйтесь на турниры, смотрите пары текущего тура,
+                        историю партий и итоговую таблицу.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <div class="rounded-circle bg-secondary bg-opacity-10 d-inline-flex p-3 mb-3">
+                        <i class="bi bi-mortarboard text-secondary fs-4"></i>
+                    </div>
+                    <h3 class="h5 mb-2">Для учёбы</h3>
+                    <p class="text-muted small mb-0">
+                        Чёткая архитектура, модульный алгоритм жеребьёвки —
+                        удобно для дипломного проекта и пояснительной записки.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

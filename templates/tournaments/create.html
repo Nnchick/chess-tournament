@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+        <h1 class="mb-3">Создание турнира</h1>
+        <p class="text-muted">
+            Заполните основные параметры турнира. Остальные настройки (участники, раунды, жеребьёвка)
+            будут доступны позже.
+        </p>
+
+        <form method="post" action="{{ url_for('create_tournament') }}">
+            <div class="mb-3">
+                <label for="name" class="form-label">Название турнира</label>
+                <input type="text" class="form-control" id="name" name="name" required maxlength="200"
+                       placeholder="Например: Городской чемпионат 2026">
+            </div>
+
+            <div class="mb-3">
+                <label for="rounds" class="form-label">Количество туров</label>
+                <input type="number" class="form-control" id="rounds" name="rounds" required min="1" max="20" value="7">
+            </div>
+
+            <div class="mb-3">
+                <label for="time_control" class="form-label">Контроль времени</label>
+                <input type="text" class="form-control" id="time_control" name="time_control"
+                       placeholder="Например: 10+5, 15+10, 90+30">
+            </div>
+
+            <div class="mb-3">
+                <label for="max_players" class="form-label">Максимум участников</label>
+                <input type="number" class="form-control" id="max_players" name="max_players" min="2" step="1"
+                       placeholder="Например: 32">
+            </div>
+
+            <div class="mb-3">
+                <label for="venue" class="form-label">Место проведения</label>
+                <input type="text" class="form-control" id="venue" name="venue" maxlength="255"
+                       placeholder="Например: Шахматный клуб «Белая ладья», ул. Центральная, 10">
+            </div>
+
+            <div class="mb-3">
+                <label for="prize_fund" class="form-label">Призовой фонд</label>
+                <input type="text" class="form-control" id="prize_fund" name="prize_fund" maxlength="100"
+                       placeholder="Например: 50 000 руб или Бесплатный турнир">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Создать турнир</button>
+                <a href="{{ url_for('list_tournaments') }}" class="btn btn-outline-secondary">Отмена</a>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

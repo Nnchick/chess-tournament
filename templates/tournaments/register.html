@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Регистрация участника</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <h1 class="mb-3 h3">Регистрация участника на турнир</h1>
+        <p class="text-muted">
+            Заполните форму ниже, чтобы зарегистрироваться на один из доступных турниров.
+            После регистрации вы появитесь в списке участников, а ваш результат будет учитываться
+            в турнирной таблице.
+        </p>
+
+        {% if default_name %}
+        <div class="alert alert-info py-2 mb-3 small">
+            <i class="bi bi-person-check me-1"></i>
+            Вы вошли как <strong>{{ default_name }}</strong>. Данные из профиля подставлены в форму.
+        </div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('public_register') }}">
+            <div class="mb-3">
+                <label for="full_name" class="form-label">ФИО или ник</label>
+                <input type="text" class="form-control" id="full_name" name="full_name"
+                       maxlength="200" required placeholder="Например: Иванов Иван / ChessMaster42"
+                       value="{{ default_name or '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="rating_elo" class="form-label">Рейтинг Elo (необязательно)</label>
+                <input type="number" class="form-control" id="rating_elo" name="rating_elo"
+                       min="0" step="1" placeholder="Например: 1800"
+                       value="{{ default_rating or '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="tournament_id" class="form-label">Выберите турнир</label>
+                <select class="form-select" id="tournament_id" name="tournament_id" required>
+                    <option value="" disabled selected>Выбрать турнир</option>
+                    {% for t in tournaments %}
+                        <option value="{{ t.id }}">
+                            {{ t.name }} ({{ t.time_control or "контроль не задан" }}, туров: {{ t.rounds }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+        </form>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Как проходит турнир</h2>
+                <ol class="small text-muted mb-0">
+                    <li>Организатор создаёт турнир и указывает количество туров.</li>
+                    <li>Участники регистрируются через эту форму или через администратора.</li>
+                    <li>Для каждого тура система автоматически формирует пары по швейцарской системе.</li>
+                    <li>После ввода результатов строится турнирная таблица с дополнительными коэффициентами.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
